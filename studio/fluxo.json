@@ -1,0 +1,455 @@
+{
+    "description": "IVR",
+    "states": [
+      {
+        "name": "Trigger",
+        "type": "trigger",
+        "transitions": [
+          {
+            "event": "incomingMessage"
+          },
+          {
+            "next": "define_duvida_padrao",
+            "event": "incomingCall"
+          },
+          {
+            "event": "incomingConversationMessage"
+          },
+          {
+            "event": "incomingRequest"
+          },
+          {
+            "event": "incomingParent"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 650,
+            "y": -70
+          }
+        }
+      },
+      {
+        "name": "gather_input",
+        "type": "gather-input-on-call",
+        "transitions": [
+          {
+            "next": "tecla_pressionada",
+            "event": "keypress"
+          },
+          {
+            "next": "resultado_fala",
+            "event": "speech"
+          },
+          {
+            "event": "timeout"
+          }
+        ],
+        "properties": {
+          "voice": "Google.pt-BR-Neural2-C",
+          "number_of_digits": 1,
+          "speech_timeout": "auto",
+          "offset": {
+            "x": 300,
+            "y": 260
+          },
+          "loop": 1,
+          "finish_on_key": "",
+          "say": "Olá, quero dar boas vindas a loja do Leão. Como podemos ajudar você hoje?\n\nPressione 1 para vendas ou 2 para suporte...\n\nCaso queira falar com um atendente, pressione 0",
+          "language": "pt-BR",
+          "stop_gather": false,
+          "gather_language": "pt-BR",
+          "profanity_filter": "true",
+          "timeout": 5
+        }
+      },
+      {
+        "name": "tecla_pressionada",
+        "type": "split-based-on",
+        "transitions": [
+          {
+            "event": "noMatch"
+          },
+          {
+            "next": "vendas",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "1",
+                "arguments": [
+                  "{{widgets.gather_input.Digits}}"
+                ],
+                "type": "equal_to",
+                "value": "1"
+              }
+            ]
+          },
+          {
+            "next": "suporte",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "2",
+                "arguments": [
+                  "{{widgets.gather_input.Digits}}"
+                ],
+                "type": "equal_to",
+                "value": "2"
+              }
+            ]
+          },
+          {
+            "next": "Copy_of_suporte",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "0",
+                "arguments": [
+                  "{{widgets.gather_input.Digits}}"
+                ],
+                "type": "equal_to",
+                "value": "0"
+              }
+            ]
+          }
+        ],
+        "properties": {
+          "input": "{{widgets.gather_input.Digits}}",
+          "offset": {
+            "x": 90,
+            "y": 480
+          }
+        }
+      },
+      {
+        "name": "resultado_fala",
+        "type": "split-based-on",
+        "transitions": [
+          {
+            "event": "noMatch"
+          },
+          {
+            "next": "vendas",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "VENDAS",
+                "arguments": [
+                  "{{widgets.gather_input.SpeechResult}}"
+                ],
+                "type": "contains",
+                "value": "vendas"
+              }
+            ]
+          },
+          {
+            "next": "suporte",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "SUPORTE",
+                "arguments": [
+                  "{{widgets.gather_input.SpeechResult}}"
+                ],
+                "type": "contains",
+                "value": "suporte"
+              }
+            ]
+          },
+          {
+            "next": "atendente",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "ATENDENTE",
+                "arguments": [
+                  "{{widgets.gather_input.SpeechResult}}"
+                ],
+                "type": "contains",
+                "value": "ATENDENTE"
+              }
+            ]
+          }
+        ],
+        "properties": {
+          "input": "{{widgets.gather_input.SpeechResult}}",
+          "offset": {
+            "x": 900,
+            "y": 480
+          }
+        }
+      },
+      {
+        "name": "connect_call",
+        "type": "connect-call-to",
+        "transitions": [
+          {
+            "event": "callCompleted"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 760,
+            "y": 1050
+          },
+          "caller_id": "{{contact.channel.address}}",
+          "noun": "number",
+          "to": "+5511933058313",
+          "timeout": 30
+        }
+      },
+      {
+        "name": "vendas",
+        "type": "say-play",
+        "transitions": [
+          {
+            "event": "audioComplete"
+          }
+        ],
+        "properties": {
+          "voice": "Polly.Thiago-Neural",
+          "offset": {
+            "x": -90,
+            "y": 810
+          },
+          "loop": 1,
+          "say": "Um momento, vou transferir você para nosso time de vendas.",
+          "language": "pt-BR"
+        }
+      },
+      {
+        "name": "suporte",
+        "type": "say-play",
+        "transitions": [
+          {
+            "event": "audioComplete"
+          }
+        ],
+        "properties": {
+          "voice": "Google.pt-BR-Neural2-C",
+          "offset": {
+            "x": 280,
+            "y": 870
+          },
+          "loop": 1,
+          "say": "Um momento, vou transferir você para nosso time de suporte.",
+          "language": "pt-BR"
+        }
+      },
+      {
+        "name": "espera",
+        "type": "say-play",
+        "transitions": [
+          {
+            "event": "audioComplete"
+          }
+        ],
+        "properties": {
+          "play": "http://demo.twilio.com/docs/classic.mp3",
+          "offset": {
+            "x": 1170,
+            "y": 960
+          },
+          "loop": 1
+        }
+      },
+      {
+        "name": "atendente",
+        "type": "say-play",
+        "transitions": [
+          {
+            "next": "espera",
+            "event": "audioComplete"
+          }
+        ],
+        "properties": {
+          "voice": "Google.pt-BR-Neural2-C",
+          "offset": {
+            "x": 1330,
+            "y": 740
+          },
+          "loop": 1,
+          "say": "Um momento, vou transferir você para um de nossos atendentes.",
+          "language": "pt-BR"
+        }
+      },
+      {
+        "name": "duvida",
+        "type": "gather-input-on-call",
+        "transitions": [
+          {
+            "event": "keypress"
+          },
+          {
+            "next": "envia_duvida",
+            "event": "speech"
+          },
+          {
+            "event": "timeout"
+          }
+        ],
+        "properties": {
+          "voice": "Polly.Thiago-Neural",
+          "speech_timeout": "auto",
+          "offset": {
+            "x": 2630,
+            "y": 360
+          },
+          "loop": 1,
+          "finish_on_key": "#",
+          "say": "{{flow.variables.mensagem}}",
+          "language": "pt-BR",
+          "stop_gather": true,
+          "gather_language": "pt-BR",
+          "profanity_filter": "true",
+          "timeout": 30
+        }
+      },
+      {
+        "name": "envia_duvida",
+        "type": "run-function",
+        "transitions": [
+          {
+            "next": "verifica_funcao",
+            "event": "success"
+          },
+          {
+            "event": "fail"
+          }
+        ],
+        "properties": {
+          "service_sid": "ZS7c0dddc80374008c36d6777c1ecbba4e",
+          "environment_sid": "ZE2fa57adbe26943674f9368970d699746",
+          "offset": {
+            "x": 2390,
+            "y": 600
+          },
+          "function_sid": "ZHae78c916172a9099e0980ef7e441e211",
+          "parameters": [
+            {
+              "value": "{{widgets.duvida.SpeechResult}}",
+              "key": "chat"
+            }
+          ],
+          "url": "https://openai-demo-6695-dev.twil.io/demo"
+        }
+      },
+      {
+        "name": "define_duvida_padrao",
+        "type": "set-variables",
+        "transitions": [
+          {
+            "next": "duvida",
+            "event": "next"
+          }
+        ],
+        "properties": {
+          "variables": [
+            {
+              "value": "Olá, aqui é o Ronaldo, seu atendente especialista em gatos. Como posso te ajudar hoje?",
+              "key": "mensagem"
+            }
+          ],
+          "offset": {
+            "x": 1920,
+            "y": 370
+          }
+        }
+      },
+      {
+        "name": "define_duvida_proxima",
+        "type": "set-variables",
+        "transitions": [
+          {
+            "next": "duvida",
+            "event": "next"
+          }
+        ],
+        "properties": {
+          "variables": [
+            {
+              "value": "{{widgets.envia_duvida.parsed.mensagem}}",
+              "key": "mensagem"
+            }
+          ],
+          "offset": {
+            "x": 1950,
+            "y": 710
+          }
+        }
+      },
+      {
+        "name": "verifica_funcao",
+        "type": "split-based-on",
+        "transitions": [
+          {
+            "next": "define_duvida_proxima",
+            "event": "noMatch"
+          },
+          {
+            "next": "mensagem_final",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "DESLIGA",
+                "arguments": [
+                  "{{widgets.envia_duvida.parsed.desliga}}"
+                ],
+                "type": "matches_any_of",
+                "value": "true,True,1"
+              }
+            ]
+          }
+        ],
+        "properties": {
+          "input": "{{widgets.envia_duvida.parsed.desliga}}",
+          "offset": {
+            "x": 2510,
+            "y": 860
+          }
+        }
+      },
+      {
+        "name": "mensagem_final",
+        "type": "say-play",
+        "transitions": [
+          {
+            "event": "audioComplete"
+          }
+        ],
+        "properties": {
+          "voice": "Polly.Thiago-Neural",
+          "offset": {
+            "x": 2750,
+            "y": 1070
+          },
+          "loop": 1,
+          "say": "{{widgets.envia_duvida.parsed.mensagem}}",
+          "language": "pt-BR"
+        }
+      },
+      {
+        "name": "Copy_of_suporte",
+        "type": "say-play",
+        "transitions": [
+          {
+            "event": "audioComplete"
+          }
+        ],
+        "properties": {
+          "voice": "Google.pt-BR-Neural2-C",
+          "offset": {
+            "x": 630,
+            "y": 780
+          },
+          "loop": 1,
+          "say": "Um momento, vamos conectar com um atendente.",
+          "language": "pt-BR"
+        }
+      }
+    ],
+    "initial_state": "Trigger",
+    "flags": {
+      "allow_concurrent_calls": true
+    }
+  }

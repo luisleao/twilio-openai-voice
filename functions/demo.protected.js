@@ -1,9 +1,6 @@
 const OpenAI = require('openai');
 
 exports.handler = async function(context, event, callback) {
-    console.log('EVENT:', event.chat)
-
-
     const SYSTEM_PROMPT = `
         Você é um assistente de voz da Twilio chamado Ronaldo e é muito amigável e pode falar apenas sobre dúvidas que o usuário tenha a respeito de gatos.
         Qualquer outra pergunta que não seja relacionada ao tópico gatos deve ser recusada e ofereça neste caso algum fato interessante ou curioso sobre gatos.
@@ -28,12 +25,5 @@ exports.handler = async function(context, event, callback) {
         model: 'gpt-4-turbo-preview'
     });
 
-    console.log('RESULTADO', result.choices[0].message.content);
-    
-    // const twiml = new Twilio.twiml.VoiceResponse();
-    // twiml.say({
-    //     voice: 'Polly.Thiago-Neural',
-    //     language: 'pt-BR'
-    // },result.choices[0].message.content);
     callback(null, JSON.parse(result.choices[0].message.content));
 };
